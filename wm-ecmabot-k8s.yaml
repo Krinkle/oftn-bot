@@ -1,0 +1,31 @@
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: ecmabot.bot
+  namespace: ecmabot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: ecmabot.bot
+    spec:
+      volumes:
+        - name: home
+          hostPath:
+            path: /data/project/ecmabot/
+      containers:
+        - name: bot
+          image: docker-registry.tools.wmflabs.org/toollabs-nodejs-base:latest
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: home
+              mountPath: /data/project/ecmabot/
+          workingDir: /data/project/ecmabot
+          env:
+            - name: HOME
+              value: /data/project/ecmabot
+            - name: ECMABOT_PROFILE
+              value: /data/project/ecmabot/etc/wm-ecmabot-profile.js
+          command: [ "/usr/bin/node", "src/oftn-bot/wm-ecmabot.js" ]
