@@ -1,7 +1,9 @@
 // This is for common functions defined in many bots at once
 var Sandbox = require("./lib/sandbox");
 var FeelingLucky = require("./lib/feelinglucky");
-var Gist = require("./lib/paste/gist");
+// PATCH(wm-ecmabot): Switch from Gist to Wikimedia Pastebin. --Krinkle
+//                    See https://github.com/oftn-oswg/oftn-bot/issues/68
+var WmPastebin = require("./lib/paste/wm-pastebin");
 
 function parse_regex_literal (text) {
 	var regexparsed = text.match(/s\/((?:[^\\\/]|\\.)*)\/((?:[^\\\/]|\\.)*)\/([gi]*)$/);
@@ -91,30 +93,15 @@ var Shared = module.exports = {
 		}
 
 		switch (command) {
-		case "|>": /* Multi-line input */
-			person.js = person.js || {timeout: null, code: []};
-			/* Clear input buffer after a minute */
-			clearTimeout (person.js.timeout);
-			person.js.timeout = setTimeout (function() {
-				person.js.code.length = 0;
-				context.channel.send_reply (context.sender, "Your `|>` line input has been cleared. (1 minute)");
-			}, 1000 * 60);
-			person.js.code.push (code);
-			return;
-		case "h>":
-		case "hs>":
-			engine = Sandbox.Haskell; break;
 		case ">>>":
 		case "v>":
 		case "v8>":
-			// context.channel.send_reply(context.intent, "v8 temporarily disabled, please use js> instead."); return;
-			engine = Sandbox.V8; break;
-		case "n>":
-			engine = Sandbox.Node; break;
-		case "b>":
-			engine = Sandbox.Babel; break;
 		default:
-			engine = Sandbox.SpiderMonkey; break;
+			// engine = Sandbox.V8; break;
+			// engine = Sandbox.Node; break;
+			// engine = Sandbox.Babel; break;
+			// PATCH(wm-ecmabot): Default to Node via Docker. --2018-03-08, Krinkle
+			engine = Sandbox.Node; break;
 		}
 
 		if (person.js && person.js.code.length) {
@@ -167,16 +154,17 @@ var Shared = module.exports = {
 						gistFile += "```";
 						gistFile += "\n\n";
 
-						Gist.createGist(gistFile, {
-							filename: result.success ? "result.md" : "error.md",
-							description: "result of " + context.sender.name + "'s code"
+						// PATCH(wm-ecmabot): Switch from Gist to Wikimedia Pastebin. --Krinkle
+						WmPastebin.createPaste(gistFile, {
+							title: result.success ? "Ecmabot Result" : "Ecmabot Error",
+							name: context.sender.name
 						})
 						.then(function(url){
 							var fullReply = cleanReply(visibleReply, result) + " ... " + url;
 							context.channel.send_reply(context.intent, fullReply, {truncate: false});
 						})
 						.catch(function(err){
-							var fullReply = cleanReply(visibleReply, result) + " ... <unable to create gist url>";
+							var fullReply = cleanReply(visibleReply, result) + " ... <unable to create paste>";
 							context.channel.send_reply(context.intent, fullReply, {truncate: false});
 						});
 					} else {
