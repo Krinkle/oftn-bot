@@ -3,7 +3,7 @@ var path = require('path');
 var util = require("util");
 var http = require("http");
 
-var Sandbox = require("./lib/sandbox");
+//var Sandbox = require("./lib/sandbox");
 
 var Bot = require("./lib/irc");
 var Shared = require("./shared");
@@ -11,9 +11,9 @@ var scrapeMdn = require('scrape-mdn');
 
 
 var JSBot = function(profile) {
-	this.sandbox = new Sandbox(path.join(__dirname, "ecmabot-utils.js"));
 	// PATCH(wm-ecmabot): Only V8-based for now. --Krinkle
-	this.executeRegex = /^(v8?>|>>>?)(.*)/;
+	//this.sandbox = new Sandbox(path.join(__dirname, "ecmabot-utils.js"));
+	//this.executeRegex = /^(v8?>|>>>?)(.*)/;
 
 	Bot.call(this, profile);
 	this.set_log_level(this.LOG_ALL);
@@ -27,7 +27,10 @@ util.inherits(JSBot, Bot);
 JSBot.prototype.init = function() {
 	Bot.prototype.init.call(this);
 
-	this.register_listener(this.executeRegex, this.execute_js);
+	// TODO: The v8/shovel doesn't work anymore. The new docker-run
+	// based approach is nice and works, but needs work to work
+	// on Wikimedia Toolforge. Disable for now.
+	// this.register_listener(this.executeRegex, this.execute_js);
 
 	this.register_command("mdn", this.mdn, {
 		help: "Search the Mozilla Developer Network. "
