@@ -33,6 +33,3 @@ $ kubectl create -f etc/wm-ecmabot-k8s.yaml
 ```
 $ kubectl delete deployment ecmabot.bot
 ```
-
-### See also
-
