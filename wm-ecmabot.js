@@ -51,15 +51,6 @@ JSBot.prototype.init = function() {
 };
 
 JSBot.prototype.execute_js = function(context, text, command, code) {
-	if (!(/\breturn\b/.test(code))) {
-		// PATCH(wm-ecmabot):
-		// Unlike the older v8/shovel, the docker-based sandbox used by oftn,
-		// doesn't act like the console, it needs an explicit `return`.
-		// Add one for simple cases with no mention of return or semi-colon.
-		code = 'return ' + code;
-	}
-
-
 	return Shared.execute_js.call(this, context, text, command, code);
 }
 
